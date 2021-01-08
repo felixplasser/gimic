@@ -484,6 +484,7 @@ contains
           call write_vtk_imagedata('jmod'// tag // '.vti', this%grid, val)
         else
           call write_vtk_imagedata('jmod.vti', this%grid, val)
+          call write_cube_imagedata('jmod.cube', this%grid, val)
         end if
         deallocate(val)
     end subroutine
@@ -578,6 +579,7 @@ contains
             end do
         end do
         call write_vtk_imagedata('acid.vti', this%grid, val)
+        call write_cube_imagedata('acid.cube', this%grid, val)
         deallocate(val)
     end subroutine
 

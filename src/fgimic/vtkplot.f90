@@ -1,6 +1,8 @@
 !
 ! Write VTK ImageData XML files
 !
+! Also cube file writer included
+!
 module vtkplot_module
     use globals_module
     use settings_module
@@ -81,6 +83,54 @@ contains
         write(fd, *) '   </Piece>'
         write(fd, *) '   </ImageData>'
         write(fd, *) '</VTKFile>'
+
+        call closefd(fd)
+    end subroutine
+
+    subroutine write_cube_imagedata(fname, grid, pdata)
+        character(*), intent(in) :: fname
+        type(grid_t) :: grid
+        real(DP), dimension(:,:,:) :: pdata
+
+        integer(I4) :: skp=1
+        integer(I4) :: i,j,k,l, fd
+        integer(I4), dimension(3) :: npts
+        real(DP), dimension(2) :: qrange
+        real(DP), dimension(3) :: qmin, qmax, step
+
+        call getfd(fd)
+        open(fd, file=trim(fname), form='formatted', status='unknown')
+
+        call get_grid_size(grid, npts(1), npts(2), npts(3))
+
+
+        qmin=gridpoint(grid,1,1,1)
+        qmax=gridpoint(grid,npts(1),npts(2),npts(3))
+!        step=(qmax-qmin)/(npts-1) ! In a 2D plot qmin(3)-qmax(3) = 0 -> dividing it by npts(3) gives a NaN
+        do i=1,3
+           step(i) = qmax(i) - qmin(i)
+           if ( step(i) > 1E-8 ) then    ! floating point numbers cannot be compared as ( step(i) == 0.0 )
+               step(i) = step(i) / ( npts(i) - 1)  ! if ( step(i) != 0 ) divide, else leave it 0
+           end if
+        end do
+
+        write(fd, *) 'ACID plot generated with GIMIC'
+        write(fd, *) '   works only if (i,j,k)=(x,y,z)'
+        write(fd, '(i5,3F14.6,i6)') 1, qmin(1), qmin(2),qmin(3), 1
+        write(fd, '(i5,3F14.6)') npts(1), step(1), 0., 0.
+        write(fd, '(i5,3F14.6)') npts(2), 0., step(2), 0.
+        write(fd, '(i5,3F14.6)') npts(3), 0., 0., step(3)
+! dummy geometry
+        write(fd, '(i5,4F14.6)') 1, 1., 0., 0., 0.
+        do i=1,npts(1)
+            do j=1,npts(2)
+                do k=1,npts(3)
+                    write(fd,'(e14.6)',advance='no') pdata(i,j,k)
+                    if (mod(l,4) == 0) write(fd,*)
+                    l=l+1
+                end do
+            end do
+        end do
 
         call closefd(fd)
     end subroutine
