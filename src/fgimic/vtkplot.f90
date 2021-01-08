@@ -116,19 +116,22 @@ contains
 
         write(fd, *) 'ACID plot generated with GIMIC'
         write(fd, *) '   works only if (i,j,k)=(x,y,z)'
-        write(fd, '(i5,3F14.6,i6)') 1, qmin(1), qmin(2),qmin(3), 1
+        write(fd, '(i5,3F14.6)') 1, qmin(1), qmin(2),qmin(3)
         write(fd, '(i5,3F14.6)') npts(1), step(1), 0., 0.
         write(fd, '(i5,3F14.6)') npts(2), 0., step(2), 0.
         write(fd, '(i5,3F14.6)') npts(3), 0., 0., step(3)
 ! dummy geometry
         write(fd, '(i5,4F14.6)') 1, 1., 0., 0., 0.
+        l = 1
         do i=1,npts(1)
             do j=1,npts(2)
                 do k=1,npts(3)
                     write(fd,'(e14.6)',advance='no') pdata(i,j,k)
-                    if (mod(l,4) == 0) write(fd,*)
+                    if (mod(l,6) == 0) write(fd,*)
                     l=l+1
                 end do
+                write(fd,*)
+                l = 1
             end do
         end do
 
